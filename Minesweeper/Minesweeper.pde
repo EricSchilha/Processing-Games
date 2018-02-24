@@ -28,10 +28,19 @@ void GAME() { //Main method
       textSize(width/8);
       fill(#00FF00);
       text("YOU WIN", width/2, height/2);
+      textSize(width/16);
+      text("Press 'R' to Restart", width/2, height/2 + height/10);
     } else {
       textSize(width/8);
       fill(#FF0000);
       text("YOU LOSE", width/2, height/2);
+      textSize(width/16);
+      text("Press 'R' to Restart", width/2, height/2 + height/10);
+    }
+    if (keyPressed && (key == 'r' || key == 'R')) {
+      init();
+      gameOver = false;
+      win = false;
     }
   }
   if (checkWin()&&!gameOver) {
@@ -40,6 +49,12 @@ void GAME() { //Main method
 }
 
 void init() { //Initializes all the mines to be randomly placed, and then sets all values for each spot based on how many mines surround it
+  gameOver = false;
+  isHeld = false;
+  drewNum = false;
+  win = false;
+  firstPress = true;
+  alCheckedSpots.clear();
   for (int i = 0; i < Y; i++) {
     for (int j = 0; j < X; j++) {
       arnField[i][j] = 0;
@@ -130,10 +145,10 @@ void reveal(int nX, int nY) {//Reveal the spot that was clicked, recursively rev
         if (i>=0 && i<Y && j>=0 && j<X) {//Bounds checking
           if (i!=nX || j!=nY) {
             boolean alreadyChecked = false;
-            for(int k = 0; k < alCheckedSpots.size(); k++){
-              if(j==alCheckedSpots.get(k).x && i==alCheckedSpots.get(k).y)alreadyChecked = true;
+            for (int k = 0; k < alCheckedSpots.size(); k++) {
+              if (j==alCheckedSpots.get(k).x && i==alCheckedSpots.get(k).y)alreadyChecked = true;
             }
-            if(!alreadyChecked){
+            if (!alreadyChecked) {
               alCheckedSpots.add(new PVector(nX, nY));
               reveal(j, i);
             }
