@@ -1,16 +1,18 @@
 Grid grid;
 void setup() {
   size(800, 800);
+  surface.setResizable(true);
   grid = new Grid(10);
 }
 
 void draw() {
+  background(255);
   grid.update();
   grid.draw();
 }
 
 class Grid {
-  private int nGridSize, nScale;
+  private int nGridSize, nTileSize;
   boolean[][] arbFilled, arbUncovered;
   boolean leftPress = false, rightPress = false;
   TileState[][] arTileStates;
@@ -18,7 +20,7 @@ class Grid {
   ArrayList<Integer>[] arlTop, arlLeft;
   Grid(int nGridSize) {
     this.nGridSize = nGridSize;
-    this.nScale = (int)width/nGridSize;
+    this.nTileSize = (int)width/(nGridSize+1);
     init();
   }
 
@@ -73,7 +75,7 @@ class Grid {
   }
 
   void update() {
-    vCurSquare.set(floor(mouseX/nScale), floor(mouseY/nScale));
+    vCurSquare.set(floor(mouseX/nTileSize), floor(mouseY/nTileSize));
     if (!mousePressed || !vPrevSquare.equals(vCurSquare)) leftPress = rightPress = false;
     if (mouseButton != LEFT) leftPress = false;
     if (mouseButton != RIGHT) rightPress = false;
@@ -82,7 +84,7 @@ class Grid {
     if (mousePressed && mouseButton == LEFT) {
       if (!leftPress) {
         try {
-          arTileStates[int(mouseY/nScale)][int(mouseX/nScale)] = (arTileStates[int(mouseY/nScale)][int(mouseX/nScale)] != TileState.FILLED) ? TileState.FILLED : TileState.EMPTY;
+          arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] = (arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] == TileState.FILLED) ? TileState.EMPTY : TileState.FILLED;
         } 
         catch (Exception e) {
         }
@@ -91,7 +93,7 @@ class Grid {
     } else if (mousePressed && mouseButton == RIGHT) {
       if (!rightPress) {
         try {
-          arTileStates[int(mouseY/nScale)][int(mouseX/nScale)] = (arTileStates[int(mouseY/nScale)][int(mouseX/nScale)] != TileState.MARKED) ? TileState.MARKED : TileState.EMPTY;
+          arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] = (arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] == TileState.MARKED) ? TileState.EMPTY : TileState.MARKED;
         } 
         catch (Exception e) {
         }
@@ -101,7 +103,7 @@ class Grid {
   }
 
   void draw() {
-    /*
+    //*
     for (int y = 0; y < nGridSize; y++) {
       for (int x = 0; x < nGridSize; x++) {
         switch(arTileStates[y][x]) {
@@ -112,18 +114,20 @@ class Grid {
           fill(20);
           break;
         case MARKED:
-          line(x*nScale, y*nScale, (x+1)*nScale, (y+1)*nScale);
-          line(x*nScale, (y+1)*nScale, (x+1)*nScale, y*nScale);
+          fill(245);
+          rect(x*nTileSize, y*nTileSize, nTileSize, nTileSize);
+          line(x*nTileSize, y*nTileSize, (x+1)*nTileSize, (y+1)*nTileSize);
+          line(x*nTileSize, (y+1)*nTileSize, (x+1)*nTileSize, y*nTileSize);
           continue;
         }
-        rect(x*nScale, y*nScale, nScale, nScale);
+        rect(x*nTileSize, y*nTileSize, nTileSize, nTileSize);
       }
     }
     /*/
     for (int y = 0; y < nGridSize; y++) {
       for (int x = 0; x < nGridSize; x++) {
         fill((arbFilled[y][x]) ? 20 : 245);
-        rect(x*nScale, y*nScale, nScale, nScale);
+        rect(x*nTileSize, y*nTileSize, nTileSize, nTileSize);
       }
     }
     //*/
