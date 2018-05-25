@@ -1,8 +1,9 @@
 Grid grid;
 void setup() {
-  size(800, 800);
+  size(966, 966);
   surface.setResizable(true);
   grid = new Grid(10);
+  textAlign(CENTER, CENTER);
 }
 
 void draw() {
@@ -13,26 +14,35 @@ void draw() {
 
 class Grid {
   private int nGridSize, nTileSize;
-  boolean[][] arbFilled, arbUncovered;
-  boolean leftPress = false, rightPress = false;
+  float fTextSize, fSideTiles;
+  boolean[][] arbFilled;
+  boolean leftPress = false, rightPress = false, isWon;
   TileState[][] arTileStates;
   PVector vCurSquare = new PVector(), vPrevSquare = new PVector();
   ArrayList<Integer>[] arlTop, arlLeft;
   Grid(int nGridSize) {
     this.nGridSize = nGridSize;
-    this.nTileSize = (int)width/(nGridSize+1);
     init();
   }
 
   void init() {
+    fSideTiles = 1.5;
+    isWon = false;
+    nTileSize = (int)(width/(nGridSize+fSideTiles));
     arbFilled = new boolean[nGridSize][nGridSize];
     arTileStates = new TileState[nGridSize][nGridSize];
     arlTop = new ArrayList[nGridSize];
     arlLeft = new ArrayList[nGridSize];
+    fTextSize = (fSideTiles*nTileSize/ceil(nGridSize/2)/1.5);
+    textSize(fTextSize);
 
     for (int y = 0; y < nGridSize; y++) {
       for (int x = 0; x < nGridSize; x++) {
-        arbFilled[y][x] = random(10) < 3; 
+        //*
+        arbFilled[y][x] = random(10) < 5; 
+        /*/
+        arbFilled[y][x] = (y%2==0 && x%2 != 0) || x%2 == 0 && y%2!= 0) ? true : false; 
+        //*/
         arTileStates[y][x] = TileState.EMPTY;
       }
     }
@@ -52,7 +62,7 @@ class Grid {
 
       arlLeft[i] = new ArrayList<Integer>();
       for (int j = 0; j < nGridSize; j++) { //Left
-      int nConsecutive = j;
+        int nConsecutive = j;
         while (nConsecutive < nGridSize && arbFilled[i][nConsecutive]) {
           nConsecutive++;
         }
@@ -64,40 +74,44 @@ class Grid {
     }
     //*
     print("\t");
-    for(int i = 0; i < nGridSize; i++) {
+    for (int i = 0; i < nGridSize; i++) {
       print(arlTop[i] + "\t");
     }
     println();
-    for(int i = 0; i < nGridSize; i++) {
+    for (int i = 0; i < nGridSize; i++) {
       println(arlLeft[i]);
     }
     /*///*/
   }
 
   void update() {
-    vCurSquare.set(floor(mouseX/nTileSize), floor(mouseY/nTileSize));
-    if (!mousePressed || !vPrevSquare.equals(vCurSquare)) leftPress = rightPress = false;
-    if (mouseButton != LEFT) leftPress = false;
-    if (mouseButton != RIGHT) rightPress = false;
-    vPrevSquare = vCurSquare.copy();
+    if (!isWon)
+      isWon = checkWin();
+    if (!isWon) {
+      vCurSquare.set(floor((mouseX - fSideTiles * nTileSize)/nTileSize), floor((mouseY - fSideTiles * nTileSize)/nTileSize));
+      if (!mousePressed || !vPrevSquare.equals(vCurSquare)) leftPress = rightPress = false;
+      if (mouseButton != LEFT) leftPress = false;
+      if (mouseButton != RIGHT) rightPress = false;
+      vPrevSquare = vCurSquare.copy();
 
-    if (mousePressed && mouseButton == LEFT) {
-      if (!leftPress) {
-        try {
-          arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] = (arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] == TileState.FILLED) ? TileState.EMPTY : TileState.FILLED;
-        } 
-        catch (Exception e) {
+      if (mousePressed && mouseButton == LEFT) {
+        if (!leftPress) {
+          try {
+            arTileStates[(int)vCurSquare.y][(int)vCurSquare.x] = (arTileStates[(int)vCurSquare.y][(int)vCurSquare.x] == TileState.FILLED) ? TileState.EMPTY : TileState.FILLED;
+          } 
+          catch (Exception e) {
+          }
+          leftPress = true;
         }
-        leftPress = true;
-      }
-    } else if (mousePressed && mouseButton == RIGHT) {
-      if (!rightPress) {
-        try {
-          arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] = (arTileStates[int(mouseY/nTileSize)][int(mouseX/nTileSize)] == TileState.MARKED) ? TileState.EMPTY : TileState.MARKED;
-        } 
-        catch (Exception e) {
+      } else if (mousePressed && mouseButton == RIGHT) {
+        if (!rightPress) {
+          try {
+            arTileStates[(int)vCurSquare.y][(int)vCurSquare.x] = (arTileStates[(int)vCurSquare.y][(int)vCurSquare.x] == TileState.MARKED) ? TileState.EMPTY : TileState.MARKED;
+          } 
+          catch (Exception e) {
+          }
+          rightPress = true;
         }
-        rightPress = true;
       }
     }
   }
@@ -115,22 +129,56 @@ class Grid {
           break;
         case MARKED:
           fill(245);
-          rect(x*nTileSize, y*nTileSize, nTileSize, nTileSize);
-          line(x*nTileSize, y*nTileSize, (x+1)*nTileSize, (y+1)*nTileSize);
-          line(x*nTileSize, (y+1)*nTileSize, (x+1)*nTileSize, y*nTileSize);
+          rect((x+fSideTiles)*nTileSize, (y+fSideTiles)*nTileSize, nTileSize, nTileSize);
+          line((x+fSideTiles)*nTileSize, (y+fSideTiles)*nTileSize, (x+fSideTiles+1)*nTileSize, (y+fSideTiles+1)*nTileSize);
+          line((x+fSideTiles)*nTileSize, (y+fSideTiles+1)*nTileSize, (x+fSideTiles+1)*nTileSize, (y+fSideTiles)*nTileSize);
           continue;
         }
-        rect(x*nTileSize, y*nTileSize, nTileSize, nTileSize);
+        rect((x+fSideTiles)*nTileSize, (y+fSideTiles)*nTileSize, nTileSize, nTileSize);
       }
     }
     /*/
-    for (int y = 0; y < nGridSize; y++) {
-      for (int x = 0; x < nGridSize; x++) {
-        fill((arbFilled[y][x]) ? 20 : 245);
-        rect(x*nTileSize, y*nTileSize, nTileSize, nTileSize);
+     for (int y = 0; y < nGridSize; y++) {
+     for (int x = 0; x < nGridSize; x++) {
+     fill((arbFilled[y][x]) ? 20 : 245);
+     rect((x+fSideTiles)*nTileSize + fSideTiles, (y+fSideTiles)*nTileSize, nTileSize, nTileSize);
+     }
+     }
+     //*/
+
+    for (int i = 0; i < nGridSize; i++) {
+      for (int j = arlTop[i].size() - 1; j >= 0; j--) {
+        fill((arlTop[i].get(j)<10)?20:#FF661A);
+        text(arlTop[i].get(j).toString(), (i+fSideTiles) * nTileSize + nTileSize / 2, nTileSize * fSideTiles - (arlTop[i].size() - j) * fTextSize);
       }
     }
-    //*/
+    for (int i = 0; i < nGridSize; i++) {
+      for (int j = arlLeft[i].size() - 1; j >= 0; j--) {
+        fill((arlLeft[i].get(j)<10)?20:#FF661A);
+        text(arlLeft[i].get(j).toString(), nTileSize * fSideTiles - (arlLeft[i].size() - j) * fTextSize, (i+fSideTiles) * nTileSize + nTileSize / 2);
+      }
+    }
+
+    if (isWon) {
+      textSize(width/8);
+      fill(#00FF00);
+      text("YOU WIN", width/2, height/2);
+      textSize(width/16);
+      text("Press 'R' to Restart", width/2, height/2 + height/10);
+      textSize(fTextSize);
+    }
+  }
+
+
+  boolean checkWin() {
+    for (int y = 0; y < nGridSize; y++) {
+      for (int x = 0; x < nGridSize; x++) {
+        if (arbFilled[y][x] && arTileStates[y][x] != TileState.FILLED) return false;
+        if (!arbFilled[y][x] && arTileStates[y][x] == TileState.FILLED) return false;
+      }
+    }
+    println("WON");
+    return true;
   }
 }
 
