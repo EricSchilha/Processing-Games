@@ -72,7 +72,7 @@ class Grid {
         j = nConsecutive;
       }
     }
-    //*
+    /*
     print("\t");
     for (int i = 0; i < nGridSize; i++) {
       print(arlTop[i] + "\t");
@@ -85,15 +85,19 @@ class Grid {
   }
 
   void update() {
-    if (!isWon)
-      isWon = checkWin();
-    if (!isWon) {
       vCurSquare.set(floor((mouseX - fSideTiles * nTileSize)/nTileSize), floor((mouseY - fSideTiles * nTileSize)/nTileSize));
       if (!mousePressed || !vPrevSquare.equals(vCurSquare)) leftPress = rightPress = false;
       if (mouseButton != LEFT) leftPress = false;
       if (mouseButton != RIGHT) rightPress = false;
       vPrevSquare = vCurSquare.copy();
 
+    if (mousePressed && mouseButton == LEFT && mouseX < fSideTiles * nTileSize && mouseY < fSideTiles * nTileSize && !leftPress) {
+      init();
+      leftPress = true;
+    }
+    if (!isWon)
+      isWon = checkWin();
+    if (!isWon) {
       if (mousePressed && mouseButton == LEFT) {
         if (!leftPress) {
           try {
@@ -112,6 +116,11 @@ class Grid {
           }
           rightPress = true;
         }
+      }
+    }
+    if (keyPressed && isWon) {
+      if(key == 'r' || key == 'R') {
+        init();
       }
     }
   }
